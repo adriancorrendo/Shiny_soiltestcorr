@@ -1,0 +1,13 @@
+name: soiltestcorr_demo
+title: soiltestcorr_demo
+username:
+account: acorrendo
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 6408838
+bundleId: 5976116
+url: https://acorrendo.shinyapps.io/soiltestcorr_demo/
+when: 1654288793.74111
+lastSyncTime: 1654288793.74111
+asMultiple: FALSE
+asStatic: FALSE
