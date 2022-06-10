@@ -253,15 +253,16 @@ tabPanel(
         # Main Panel
         mainPanel(
             h1("Description"),
-            p("Soil test correlation and calibration is foundational to the Fertilizer Recommendation Support Tool",
+            p("Soil test correlation is foundational to the Fertilizer 
+              Recommendation Support Tool",
               a("(FRST)",
                 href = "http://www.soiltestfrst.org/"), 
-              "being developed for the US. This package stems from ongoing efforts with FRST, 
-              providing some functions that simplify soil test correlation analysis for R users."),
-            p("In this context, soiltestcorr offers a collection of functions intended to
-              contribute to reproducible correlation analysis between crop relative yield
-              and soil test values."),
-            p("This is a strategic collaborative initiative between ",
+              "being developed for the US. In this context, the soiltestcorr-package 
+              offers a collection of functions intended to contribute to reproducible 
+              correlation analysis between crop relative yield and soil test values. 
+              This web-application tool was specifically designed to facilitate the use of the 
+              soiltestcorr functionalities for users with no background in R-programming. 
+              Both developments stemmed from ongoing work with the ",
               a("FRST",
                 href = "http://www.soiltestfrst.org/"),
               " and Feed the Future Innovation Lab for Collaborative Research on Sustainable
@@ -288,7 +289,7 @@ tabPanel(
 
 server <- function(input, output) {
    
-    # Call Reactive vars ----
+   # Call Reactive vars ----
    rv <- reactiveValues()
    
    observe({
