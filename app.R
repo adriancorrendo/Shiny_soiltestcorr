@@ -146,10 +146,10 @@ tabPanel(
             p("CRYV: lowest soil test value that minimizes the residual sum of squares of the classification model"),
             tags$hr(),
             p("linear_plateau() & quadratic_plateau functions:"), 
-            p("intercept: relative yield when soil test value (or x-variable) = 0"), br(),
-            p("slope: linear change rate of relative yield per unit of soil test values (or x-variable)"), br(),
-            p("LL_cxp: lower limit of CSTV at the plateau level"), 
-            p("UL_cxp: upper limit of CSTV at the plateau level"),
+            p("intercept: relative yield when soil test value (or x-variable) = 0"), 
+            p("slope: linear change rate of relative yield per unit of soil test values (or x-variable)"), 
+            p("LL_cstv: lower limit of CSTV at the plateau level"), 
+            p("UL_cstv: upper limit of CSTV at the plateau level"),
             p("STVt: Soil test value at the target level"),
             p("AIC: Aikaike Information Criteria score"),
             p("AICc: corrected-Aikaike Information Criteria score. Adjusted by the number of parameters"),
@@ -394,8 +394,7 @@ server <- function(input, output) {
     # Results summary ----
     output$results_summary <-
 
-      
-        renderTable({
+       renderTable({
 
             if (input$method_choice == "mod_alcc") {
                 results_tidy <-
@@ -425,7 +424,7 @@ server <- function(input, output) {
                 results_tidy <-
                     soiltestcorr::linear_plateau(data = rv$data_set,
                                                  ry = y, stv = x,
-                                                 #target = input$target,
+                                                 target = input$target,
                                                  tidy = TRUE)  %>%
                     mutate(.before = 1, Method = paste(input$method_choice))    }
 
@@ -433,9 +432,9 @@ server <- function(input, output) {
                 results_tidy <-
                     soiltestcorr::quadratic_plateau(data = rv$data_set,
                                                     ry = y, stv = x,
-                                                    #target = input$target,
+                                                    target = input$target,
                                                     tidy = TRUE) %>%
-                    mutate(.after = UL_cxp, CI_type = "Wald Conf. Interval") %>%
+                    #mutate(.after = UL_ctstv, CI_type = "Wald Conf. Interval") %>%
                     mutate(.before = 1, Method = paste(input$method_choice))    }
 
             if (input$method_choice == "mitscherlich") {
