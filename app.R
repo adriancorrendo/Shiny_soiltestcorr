@@ -150,6 +150,7 @@ tabPanel(
             p("slope: linear change rate of relative yield per unit of soil test values (or x-variable)"), br(),
             p("LL_cxp: lower limit of CSTV at the plateau level"), 
             p("UL_cxp: upper limit of CSTV at the plateau level"),
+            p("STVt: Soil test value at the target level"),
             p("AIC: Aikaike Information Criteria score"),
             p("AICc: corrected-Aikaike Information Criteria score. Adjusted by the number of parameters"),
             tags$hr(),
