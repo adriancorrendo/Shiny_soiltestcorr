@@ -18,7 +18,6 @@ library(soiltestcorr)
 
 
 # LOAD DATASETS ----
-#utils::data("freitas1966", package = "soiltestcorr")
 data_1 <- soiltestcorr::freitas1966 %>% rename(x=STK, y=RY)
 data_2 <- soiltestcorr::data_test %>% rename(x=STV, y=RY)
 
@@ -272,7 +271,7 @@ tabPanel(
               ") projects."),
             tags$hr(),
             h2("Citation"),
-            p("Correndo A, Pearce A, Osmond D, Ciampitti I (2022). soiltestcorr: Soil Test Correlation and Calibration. R package version 2.1.1.",
+            p("Correndo A, Pearce A, Osmond D, Ciampitti I (2022). soiltestcorr: Soil Test Correlation and Calibration. R package version 2.1.2.",
               a("https://cloud.r-project.org/web/packages/soiltestcorr/",
                 href = "https://cloud.r-project.org/web/packages/soiltestcorr/"))
             
@@ -364,7 +363,7 @@ server <- function(input, output) {
             plot <-
             soiltestcorr::linear_plateau(data = rv$data_set,
                                          ry = y, stv = x,
-                                         #target = input$target,
+                                         target = input$target,
                                          plot = TRUE) +
                 labs(x=paste(input$xtitle), y = paste(input$ytitle))    }
 
@@ -372,7 +371,7 @@ server <- function(input, output) {
             plot <-
             soiltestcorr::quadratic_plateau(data = rv$data_set,
                                          ry = y, stv = x,
-                                         #target = input$target,
+                                         target = input$target,
                                          plot = TRUE)+
                 labs(x=paste(input$xtitle), y = paste(input$ytitle))     }
 
@@ -380,7 +379,7 @@ server <- function(input, output) {
             plot <-
             soiltestcorr::mitscherlich(data = rv$data_set,
                                          ry = y, stv = x,
-                                         type = 1, #target = input$target,
+                                         type = 1, target = input$target,
                                          plot = TRUE)+
                 labs(x=paste(input$xtitle), y = paste(input$ytitle))      }
         # Plotly output
