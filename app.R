@@ -30,7 +30,7 @@ method_list = list("mod_alcc", "cate_nelson_1965", "cate_nelson_1971",
 # 1.0 USER INTERFACE ----
 ui <- navbarPage(
 
-    title = "soiltestcorr R-package",
+    title = "soiltestcorr-shinyapp",
 
     theme = bslib::bs_theme(version = 4, bootswatch = "yeti"),
 
@@ -273,7 +273,13 @@ tabPanel(
             h2("Citation"),
             p("Correndo A, Pearce A, Osmond D, Ciampitti I (2022). soiltestcorr: Soil Test Correlation and Calibration. R package version 2.1.2.",
               a("https://cloud.r-project.org/web/packages/soiltestcorr/",
-                href = "https://cloud.r-project.org/web/packages/soiltestcorr/"))
+                href = "https://cloud.r-project.org/web/packages/soiltestcorr/")),
+            h3("Development"),
+            p("This application was designed by Adrian Correndo (C) (2022) using the shiny R-package."),
+            p("Chang et al. (2021). _shiny: Web  Application Framework for R_. R package version 1.7.1,",
+              a("<https://CRAN.R-project.org/package=shiny>", 
+                href = "https://CRAN.R-project.org/package=shiny"))
+            
             
         )
     )
