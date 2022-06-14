@@ -5,10 +5,10 @@ account: acorrendo
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 6408838
-bundleId: 6001227
+bundleId: 6007838
 url: https://acorrendo.shinyapps.io/soiltestcorr_demo/
-when: 1655081041.72298
-lastSyncTime: 1655081041.72299
+when: 1655237296.02899
+lastSyncTime: 1655237296.029
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: init.R|LICENSE|README.md|run.R

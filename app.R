@@ -18,12 +18,11 @@ library(soiltestcorr)
 
 
 # LOAD DATASETS ----
-data_1 <- soiltestcorr::freitas1966 %>% rename(x=STK, y=RY)
-data_2 <- soiltestcorr::data_test %>% rename(x=STV, y=RY)
+data_1 <- soiltestcorr::data_test %>% rename(x=STV, y=RY)
+data_2 <- soiltestcorr::freitas1966 %>% rename(x=STK, y=RY)
 
-data_list = list("Freitas et al. 1966" = data_1,
-                 "Test dataset" = data_2
-)
+data_list = list("Test dataset" = data_1,
+                 "Freitas et al. 1966" = data_2)
 
 method_list = list("mod_alcc", "cate_nelson_1965", "cate_nelson_1971",
                    "linear_plateau", "quadratic_plateau", "mitscherlich")
@@ -49,7 +48,7 @@ ui <- navbarPage(
                 shiny::selectInput(
                     inputId = "dataset_choice",
                     label   = "Choose a dataset",
-                    choices = c("Freitas et al. 1966", "Test dataset")
+                    choices = c("Test dataset", "Freitas et al. 1966")
                 ),
 
                 # Load user data
@@ -82,8 +81,8 @@ ui <- navbarPage(
       ### Main Panel ----
             mainPanel(
                 h1("Soil Test Correlation Plot"),
-                plotlyOutput("corrplot", height = 800, width = 1400) # plotly
-                #plotOutput("corrplot", height = 600) # ggplot
+                #plotlyOutput("corrplot", height = 700, width = 1200) # plotly
+                plotOutput("corrplot", height = 600, width = 900) # ggplot
 
             )
         )
@@ -334,8 +333,8 @@ server <- function(input, output) {
     output$corrplot <-
 
 
-        renderPlotly({
-        #renderPlot({
+        #renderPlotly({
+        renderPlot({
 
         if (input$method_choice == "mod_alcc") {
             plot <-
@@ -343,7 +342,9 @@ server <- function(input, output) {
                                    ry = y, stv = x,
                                    target = input$target, confidence = 0.95,
                                    plot = TRUE)+
-                labs(x=paste(input$xtitle), y = paste(input$ytitle)) }
+               theme(axis.text = element_text(size = rel(1.25)),
+                     axis.title = element_text(size = rel(1.75)))+
+               labs(x=paste(input$xtitle), y = paste(input$ytitle)) }
 
         if (input$method_choice == "cate_nelson_1965") {
             plot <-
@@ -351,6 +352,8 @@ server <- function(input, output) {
                                            ry = y, stv = x,
                                            target = input$target,
                                            plot = TRUE)+
+               theme(axis.text = element_text(size = rel(1.25)),
+                     axis.title = element_text(size = rel(1.75)))+
                 labs(x=paste(input$xtitle), y = paste(input$ytitle))     }
 
         if (input$method_choice == "cate_nelson_1971") {
@@ -358,6 +361,8 @@ server <- function(input, output) {
             soiltestcorr::cate_nelson_1971(data = rv$data_set,
                                            ry = y, stv = x,
                                            plot = TRUE)+
+               theme(axis.text = element_text(size = rel(1.25)),
+                     axis.title = element_text(size = rel(1.75)))+
                 labs(x=paste(input$xtitle), y = paste(input$ytitle))     }
 
         if (input$method_choice == "linear_plateau") {
@@ -366,6 +371,8 @@ server <- function(input, output) {
                                          ry = y, stv = x,
                                          target = input$target,
                                          plot = TRUE) +
+               theme(axis.text = element_text(size = rel(1.25)),
+                     axis.title = element_text(size = rel(1.75)))+
                 labs(x=paste(input$xtitle), y = paste(input$ytitle))    }
 
         if (input$method_choice == "quadratic_plateau") {
@@ -374,6 +381,8 @@ server <- function(input, output) {
                                          ry = y, stv = x,
                                          target = input$target,
                                          plot = TRUE)+
+               theme(axis.text = element_text(size = rel(1.25)),
+                     axis.title = element_text(size = rel(1.75)))+
                 labs(x=paste(input$xtitle), y = paste(input$ytitle))     }
 
         if (input$method_choice == "mitscherlich") {
@@ -382,11 +391,13 @@ server <- function(input, output) {
                                          ry = y, stv = x,
                                          type = 1, target = input$target,
                                          plot = TRUE)+
+               theme(axis.text = element_text(size = rel(1.25)),
+                     axis.title = element_text(size = rel(1.75)))+
                 labs(x=paste(input$xtitle), y = paste(input$ytitle))      }
         # Plotly output
-        plotly::ggplotly(plot)
+        #plotly::ggplotly(plot)
         # Or ggplot
-        #plot
+        plot
 
 
     })
