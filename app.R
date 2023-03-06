@@ -12,6 +12,9 @@ library(plotly)
 
 # Core
 library(tidyverse)
+library(tools)
+library(readr)
+library(readxl)
 
 # SoilTestCorr
 library(soiltestcorr)
@@ -32,7 +35,7 @@ ui <- navbarPage(
 
     title = "soiltestcorr-shinyapp",
 
-    theme = bslib::bs_theme(version = 4, bootswatch = "yeti"),
+    theme = bslib::bs_theme(version = 4, bootswatch = "flatly"),
 
     ## Main tab----
     tabPanel(
@@ -53,14 +56,10 @@ ui <- navbarPage(
 
                 # Load user data
                 p("Or you can upload your own data:"),
-                shiny::fileInput("file1", "Load your data (*.csv). \n 
-                                 x = soil test, y = yield",
-                                           accept = c(
-                                               "text/csv",
-                                               "text/comma-separated-values,text/plain",
-                                               ".csv")    ),
+                p("Columns named 'x' = soil test values, and 'y' = yield"),
+                shiny::fileInput("file1", "Accepted formats: csv, xls, or xlsx",
+                                 accept = c(".csv",".xls", ".xlsx") ),
                 tags$hr(),
-
                 # Method choice
                 shiny::selectInput(
                     inputId = "method_choice",
@@ -271,22 +270,23 @@ tabPanel(
               ") projects."),
             tags$hr(),
             h2("Citation"),
-            p("Correndo A, Pearce A, Osmond D, Ciampitti I (2022). soiltestcorr: Soil Test Correlation and Calibration. R package version 2.1.2.",
-              a("https://cloud.r-project.org/web/packages/soiltestcorr/",
-                href = "https://cloud.r-project.org/web/packages/soiltestcorr/")),
+            p("Correndo, A., Pearce, A., Bolster, C.H., Spargo, J.T., Osmond, D., Ciampitti, I.A., 2023. The soiltestcorr R package: An accessible framework for reproducible correlation analysis of crop yield and soil test data. SoftwareX 21, February 2023, 101275",
+              a("https://doi.org/10.1016/j.softx.2022.101275",
+                href = "https://doi.org/10.1016/j.softx.2022.101275")),
             h3("Development"),
-            p("This application was designed by Adrian Correndo (C) (2022) using the shiny R-package."),
+            p("This application was designed by Adrian Correndo (C) (2022) using the shiny R-package.",
+              a("https://adriancorrendo.github.io/",
+                href = "https://adriancorrendo.github.io/")),
             p("Chang et al. (2021). _shiny: Web  Application Framework for R_. R package version 1.7.1,",
               a("<https://CRAN.R-project.org/package=shiny>", 
-                href = "https://CRAN.R-project.org/package=shiny"))
-            
+                href = "https://CRAN.R-project.org/package=shiny")),
+            p("Last update on:", print (Sys.Date()))
             
         )
     )
 )
 
 )
-
 
 
 
@@ -310,8 +310,14 @@ server <- function(input, output) {
          rv$data_set <- data_list %>% pluck(input$dataset_choice )
       }
       
-      else {rv$data_set <- read.csv(inFile$datapath, #header = input$header
-      )}
+      else {rv$data_set <- 
+        
+        switch(tools::file_ext(inFile$name), 
+                         csv = readr::read_csv(inFile$datapath),
+                         xls = readxl::read_xls(inFile$datapath),
+                         xlsx = readxl::read_xlsx(inFile$datapath) )
+        
+        }
       
    })
 
@@ -326,10 +332,20 @@ server <- function(input, output) {
 
         if (is.null(inFile))
             return(NULL)
+        
+        if (!is.null( inFile )) {
+        extension <- tools::file_ext(inFile$name)
+        filepath <- inFile$datapath
+        data_set <- switch(extension, 
+                             csv = readr::read_csv(filepath),
+                             xls = readxl::read_xls(filepath),
+                             xlsx = readxl::read_xlsx(filepath) )  }
 
 
-        read.csv(inFile$datapath, #header = input$header
-                 ) %>% 
+        # read.csv(inFile$datapath, #header = input$header
+        #          ) 
+        
+        data_set  %>% 
            rename(x=STV, y=RY) %>%
             mutate(obs = seq(1,nrow(.),by=1), .before = 1,
                    obs = as.integer(obs)) 
