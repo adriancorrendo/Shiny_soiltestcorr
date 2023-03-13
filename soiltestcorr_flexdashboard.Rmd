@@ -23,8 +23,8 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ```{r libraries, echo=FALSE, warning=FALSE, message=FALSE}
 # install.packages("devtools")
+#library(devtools)
 #devtools::install_github("adriancorrendo/soiltestcorr")
-
 library(soiltestcorr)
 library(shiny)
 library(flexdashboard)
@@ -342,7 +342,7 @@ install_github("adriancorrendo/soiltestcorr")
 
 You can grab the following code to your R session and run it by yourself!
 
-Don't forget to visit the Vignettes for more details. 
+Don't forget to visit the package's [vignettes]("https://adriancorrendo.github.io/soiltestcorr/articles/Introduction_to_soiltestcorr.html") for more details. 
 ```{r echo=TRUE, eval=FALSE}
 # Load the package
 library(soiltestcorr)
@@ -397,58 +397,31 @@ fit_mitscherlich
 ```
 
 
-
-ABOUT {data-orientation=rows}
+ABOUT {data-orientation=columns}
 ================================
-Row {data-heigth=100}
--------------
-```{r}
+Column {.sidebar}
+-----------------
+<a href = "https://adriancorrendo.github.io/soiltestcorr/"><img src = "www/soiltestcorr_logo.png" width = 160></a>
 
-tabPanel(
-    titlePanel("About soiltestcorr"),
-    sidebarLayout(
-      # Logo
-        mainPanel(
-           width = 1.2,
-           img(src = "www/soiltestcorr_logo.png", height = 120, width = 100)),
-        # Main Panel
-        mainPanel(
-            h1("Description"),
-            p("Soil test correlation is foundational to the Fertilizer 
-              Recommendation Support Tool",
-              a("(FRST)",
-                href = "http://www.soiltestfrst.org/"), 
-              "being developed for the US. In this context, the soiltestcorr-package 
-              offers a collection of functions intended to contribute to reproducible 
-              correlation analysis between crop relative yield and soil test values. 
-              This web-application tool was specifically designed to facilitate the use of the 
-              soiltestcorr functionalities for users with no background in R-programming. 
-              Both developments stemmed from ongoing work with the ",
-              a("FRST",
-                href = "http://www.soiltestfrst.org/"),
-              " and Feed the Future Innovation Lab for Collaborative Research on Sustainable
-              Intensification (",
-              a("SIIL",
-                href = "https://digitalconsortium.wixsite.com/dgfsc"),
-              ") projects."),
-            tags$hr(),
-            h2("Citation"),
-            p("Correndo, A., Pearce, A., Bolster, C.H., Spargo, J.T., Osmond, D., Ciampitti, I.A., 2023. The soiltestcorr R package: An accessible framework for reproducible correlation analysis of crop yield and soil test data. SoftwareX 21, February 2023, 101275",
-              a("https://doi.org/10.1016/j.softx.2022.101275",
-                href = "https://doi.org/10.1016/j.softx.2022.101275")),
-            h3("Development"),
-            p("This application was designed by Adrian Correndo (C) (2022) using the shiny R-package.",
-              a("https://adriancorrendo.github.io/",
-                href = "https://adriancorrendo.github.io/")),
-            p("Chang et al. (2021). _shiny: Web  Application Framework for R_. R package version 1.7.1,",
-              a("<https://CRAN.R-project.org/package=shiny>", 
-                href = "https://CRAN.R-project.org/package=shiny")),
-            p("Last update on:", paste0(Sys.Date()))
-            
-        )
-    
-    )
-)
+<a href = "https://soiltestfrst.org/"><img src = "www/FRST_logo.png" width = 180 ></a>
 
+Column {data-width=600}
+-----------------------
 
-```
+<b> Description </b>
+
+Soil test correlation is foundational to the Fertilizer Recommendation Support Tool ([FRST](http://www.soiltestfrst.org/)) being developed for the US. In this context, the `soiltestcorr` package offers a collection of functions intended to contribute to reproducible correlation analysis between crop relative yield and soil test values. This web-application tool was specifically designed to facilitate the use of the `soiltestcorr` functionalities for users with no background in R-programming. Both developments stemmed from ongoing work with the FRST and Feed the Future Innovation Lab for Collaborative Research on Sustainable Intensification ( [SIIL](https://digitalconsortium.wixsite.com/dgfsc) ) projects.
+
+<b> Citation </b>
+
+Correndo, A., Pearce, A., Bolster, C.H., Spargo, J.T., Osmond, D., Ciampitti, I.A., 2023. _The soiltestcorr R package: An accessible framework for reproducible correlation analysis of crop yield and soil test data_. SoftwareX 21, February 2023, 101275 [https://doi.org/10.1016/j.softx.2022.101275](https://doi.org/10.1016/j.softx.2022.101275)
+
+<b> Development </b>
+
+This application was designed in R by [Adrian Correndo](https://adriancorrendo.github.io/) (C) (2022) using the `shiny` and `flexdashboard` packages:
+
+Chang et al. (2021). _shiny: Web Application Framework for R_. R package version 1.7.1, <[https://CRAN.R-project.org/package=shiny](https://CRAN.R-project.org/package=shiny)>
+
+Sievert C, Iannone R, Allaire J, Borges B (2023). _flexdashboard: R Markdown Format for Flexible Dashboards_. R package version 0.6.1.9000, <[https://pkgs.rstudio.com/flexdashboard/](https://pkgs.rstudio.com/flexdashboard/), [https://github.com/rstudio/flexdashboard/](https://github.com/rstudio/flexdashboard/)>
+
+Last update on: 2023-03-13
