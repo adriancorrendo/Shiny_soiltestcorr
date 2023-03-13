@@ -1,0 +1,454 @@
+---
+title: "soiltestcorr ShinyApp"
+author: "Correlation and Calibration Curves"
+output: 
+    flexdashboard::flex_dashboard:
+        orientation: rows
+        vertical_layout: fill
+        navbar:
+           - { icon: "fa-safari", href: "https://ciampittilab.wixsite.com/ciampitti-lab", align: right }
+           - { icon: "fa-github", href: "https://github.com/adriancorrendo/soiltestcorr", align: right }
+           - { icon: "fa-twitter", href: "https://twitter.com/aacorrendo/", align: right}
+           - { icon: "fa-linkedin", href: "https://www.linkedin.com/in/adriancorrendo/", align: right}
+        theme:
+          bg: "#ecf5ce"
+          fg: "#2f3e46"
+          primary: "#5b81ba"
+          base_font: !expr bslib::font_google("Abel")
+runtime: shiny
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r libraries, echo=FALSE, warning=FALSE, message=FALSE}
+# install.packages("devtools")
+#devtools::install_github("adriancorrendo/soiltestcorr")
+
+library(soiltestcorr)
+library(shiny)
+library(flexdashboard)
+library(tidyr)
+library(purrr)
+library(DT)
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(readxl)
+library(tools)
+```
+
+MAIN {data-orientation=columns}
+===================================== 
+
+Inputs {.sidebar data-width=300}
+-------------------------------------
+```{r}
+# LOAD DATASETS ----
+# Data list
+data_list = list("Test dataset" = soiltestcorr::data_test %>% 
+                    dplyr::rename(STV = STV, RY = RY),
+                 "Freitas et al (1966)" = soiltestcorr::freitas1966 %>% 
+                    dplyr::rename(STV = STK, RY = RY))
+# Reactive Data
+chosen_data <- reactive({ data_list %>% purrr::pluck(input$dataset_choice) })
+
+method_list = list("mod_alcc", "cate_nelson_1965", "cate_nelson_1971",
+                   "linear_plateau", "quadratic_plateau", "mitscherlich")
+
+
+```
+
+```{r}
+# Data
+data_set <- reactive({
+  
+  inFile <- input$file
+# IF DATA IS NOT LOADED, USE EXAMPLE DATASETS
+  if (is.null( inFile )) { return( data_list %>% purrr::pluck(input$dataset_choice) )   }
+  
+# READING THE FILE WHEN THE USER UPLOADS A CSV / XLS / XLSX
+  if (is.element("datapath", names(inFile))) {
+    #read.csv(input$file$datapath, sep = ",", header = T)
+    extension <- tools::file_ext(inFile$name)
+      filepath <- inFile$datapath
+      data_ <- switch(extension, 
+                         csv = readr::read_csv(filepath),
+                         xls = readxl::read_xls(filepath),
+                         xlsx = readxl::read_xlsx(filepath) ) 
+      data_ <- data_ %>% 
+         dplyr::rename(STV = input$STVcol, RY = input$RYcol)
+      return(data_) 
+     }
+ 
+} )
+```
+
+```{r inputPanel, echo=FALSE}
+sidebarPanel(width = 3.5,
+                #h5("Data"),
+                # Example datasets
+                #p("Use the example datasets:"),
+                shiny::selectInput(
+                    inputId = "dataset_choice",
+                    label   = "Choose an example dataset",
+                    choices = c("Test dataset",
+                                "Freitas et al (1966)") ),
+                # Load user data
+                p("Or upload your data:"),
+                shiny::fileInput(inputId = "file",
+                                 label = "STV = soil test value, \n
+                                 RY = rel. yield (%)",
+                                 multiple = FALSE, #only 1 file at a time
+                                 accept = c("text/csv",
+                                            "text/comma-separated-values,text/plain",
+                                            ".csv",
+                                            ".xls",
+                                            ".xlsx"),     
+                                 placeholder = "*.csv | *.xls | *.xlsx"),
+                # Column names input
+                shiny::textInput("STVcol", "STV column name", "STV"),
+                shiny::textInput("RYcol", "RY column name", "RY"),
+                tags$hr(),
+                # Method choice
+                h5("Method"),
+                # Method choice
+                shiny::selectInput(
+                    inputId = "method_choice",
+                    label   = "Choose a correlation method",
+                    choices = c("mod_alcc", "cate_nelson_1965",
+                                "cate_nelson_1971",
+                                "linear_plateau", "quadratic_plateau",
+                                "mitscherlich"),
+                    selected = "cate_nelson_1965"
+                ),
+                # Target RY
+                sliderInput("target", "Target Yield (%)", value = 90, min = 70, max = 99),
+                tags$hr(),
+                # Text input
+                h5("Plot"),
+                shiny::textInput("xtitle", "X axis title", "Soil test value (units)"),
+                shiny::textInput("ytitle", "Y axis title", "Relative yield (%)") )
+                
+```
+
+Column
+-------------------------
+### Data Visualization
+```{r}
+renderPlot(
+   res = 150,
+   expr =  {
+        if (input$method_choice == "mod_alcc") {
+            plot <-
+            soiltestcorr::mod_alcc(data = data_set(),
+                                   ry = RY, stv = STV,
+                                   target = input$target, confidence = 0.95,
+                                   plot = TRUE)+
+               theme(axis.text = element_text(size = rel(1.25)),
+                     axis.title = element_text(size = rel(1.75)))+
+               labs(x=paste(input$xtitle), y = paste(input$ytitle)) }
+
+        if (input$method_choice == "cate_nelson_1965") {
+            plot <-
+            soiltestcorr::cate_nelson_1965(data = data_set(),
+                                           ry = RY, stv = STV,
+                                           target = input$target,
+                                           plot = TRUE)+
+               theme(axis.text = element_text(size = rel(1.25)),
+                     axis.title = element_text(size = rel(1.75)))+
+                labs(x=paste(input$xtitle), y = paste(input$ytitle))     }
+
+        if (input$method_choice == "cate_nelson_1971") {
+            plot <-
+            soiltestcorr::cate_nelson_1971(data = data_set(),
+                                           ry = RY, stv = STV,
+                                           plot = TRUE)+
+               theme(axis.text = element_text(size = rel(1.25)),
+                     axis.title = element_text(size = rel(1.75)))+
+                labs(x=paste(input$xtitle), y = paste(input$ytitle))     }
+
+        if (input$method_choice == "linear_plateau") {
+            plot <-
+            soiltestcorr::linear_plateau(data = data_set(),
+                                         ry = RY, stv = STV,
+                                         target = input$target,
+                                         plot = TRUE) +
+               theme(axis.text = element_text(size = rel(1.25)),
+                     axis.title = element_text(size = rel(1.75)))+
+                labs(x=paste(input$xtitle), y = paste(input$ytitle))    }
+
+        if (input$method_choice == "quadratic_plateau") {
+            plot <-
+            soiltestcorr::quadratic_plateau(data = data_set(),
+                                         ry = RY, stv = STV,
+                                         target = input$target,
+                                         plot = TRUE)+
+               theme(axis.text = element_text(size = rel(1.25)),
+                     axis.title = element_text(size = rel(1.75)))+
+                labs(x=paste(input$xtitle), y = paste(input$ytitle))     }
+
+        if (input$method_choice == "mitscherlich") {
+            plot <-
+            soiltestcorr::mitscherlich(data = data_set(),
+                                         ry = RY, stv = STV,
+                                         type = 1, target = input$target,
+                                         plot = TRUE)+
+               theme(axis.text = element_text(size = rel(1.25)),
+                     axis.title = element_text(size = rel(1.75)))+
+                labs(x=paste(input$xtitle), y = paste(input$ytitle))      }
+        # Plotly output
+        #plotly::ggplotly(plot)
+        # Or ggplot
+        plot
+    }
+   )
+```
+
+DATA {data-orientation=columns}
+=====================================
+Column {.sidebar}
+-----------------
+This tab displays the data used for the analysis and plots.
+
+Column {column-width=200}
+-----------------
+### Data table
+```{r}
+DT::renderDataTable(
+  options = list(pageLength = 15),
+  { data_set() })
+```
+
+RESULTS {data-orientation=columns}
+===================================== 
+
+Column {data-width=100}
+-------------------------------------
+```{r}
+renderTable({
+
+            if (input$method_choice == "mod_alcc") {
+                results_tidy <-
+                    soiltestcorr::mod_alcc(data = data_set(),
+                                           ry = RY, stv = STV,
+                                           target = input$target, confidence = 0.95,
+                                           tidy = TRUE) %>%
+                    dplyr::select(-SMA,-Curve) %>%
+                    mutate(.before = 1, Method = paste(input$method_choice))  }
+
+            if (input$method_choice == "cate_nelson_1965") {
+                results_tidy <-
+                    soiltestcorr::cate_nelson_1965(data = data_set(),
+                                                   ry = RY, stv = STV,
+                                                   target = input$target,
+                                                   tidy = TRUE) %>%
+                    mutate(.before = 1, Method = paste(input$method_choice))     }
+
+            if (input$method_choice == "cate_nelson_1971") {
+                results_tidy <-
+                    soiltestcorr::cate_nelson_1971(data = data_set(),
+                                                   ry = RY, stv = STV,
+                                                   tidy = TRUE) %>%
+                    mutate(.before = 1, Method = paste(input$method_choice))     }
+
+            if (input$method_choice == "linear_plateau") {
+                results_tidy <-
+                    soiltestcorr::linear_plateau(data = data_set(),
+                                                 ry = RY, stv = STV,
+                                                 target = input$target,
+                                                 tidy = TRUE)  %>%
+                    mutate(.before = 1, Method = paste(input$method_choice))    }
+
+            if (input$method_choice == "quadratic_plateau") {
+                results_tidy <-
+                    soiltestcorr::quadratic_plateau(data = data_set(),
+                                                    ry = RY, stv = STV,
+                                                    target = input$target,
+                                                    tidy = TRUE) %>%
+                    #mutate(.after = UL_ctstv, CI_type = "Wald Conf. Interval") %>%
+                    mutate(.before = 1, Method = paste(input$method_choice))    }
+
+            if (input$method_choice == "mitscherlich") {
+                results_tidy <-
+                    soiltestcorr::mitscherlich(data = data_set(),
+                                               ry = RY, stv = STV,
+                                               type = 1, target = input$target,
+                                               tidy = TRUE) %>%
+                    mutate(.before = 1, Method = paste(input$method_choice))  }
+
+            results_tidy
+
+         })
+```
+
+<b> Abbreviations </b>
+
+mod_alcc() function:
+
+- mod_alcc: Modified Arcsine-log Calibration Curve
+- n: sample size
+- r: Pearson's Correlation Coefficient
+- target: relative yield to estimate the CSTV
+- CSTV: critical soil test value
+- LL: lower limit of CSTV
+- UL: lower limit of CSTV
+- confidence: 1-alpha, to estimate confidence interval
+- CSTV90: critical soil test value for 90% or relative yield
+- CSTV100: critical soil test value for 100% or relative yield
+- n.90x2: number of observations with soil test values above two-times the CSTV90. They may represent a risk of leverage
+- n.100: number of observations with soil test values above the CSTV100. They may represent a risk of leverage
+
+cate_nelson_1965() function:
+
+- CRYV: target to estimate the CSTV
+- quadrants.qI/II/III/IV: number of observations on each quadrant
+- quadrants.positive: number of well-classified observations
+- quadrants.negative: number of observations that don't match yield expectations based on their soil test values
+- R2: coefficient of determination of the classification model
+
+cate_nelson_1971() function:
+
+- CSTV: lowest soil test value that minimizes the residual sum of squares of the classification model
+- linear_plateau() & quadratic_plateau functions:
+- intercept: relative yield when soil test value (or x-variable) = 0
+- slope: linear change rate of relative yield per unit of soil test values (or x-variable)
+- LL_cstv: lower limit of CSTV at the plateau level
+- UL_cstv: upper limit of CSTV at the plateau level
+- STVt: Soil test value at the target level
+- AIC: Aikaike Information Criteria score
+- AICc: corrected-Aikaike Information Criteria score. Adjusted by the number of parameters
+
+mitscherlich() function:
+
+- a: asymptote of the response function
+- b: x-intercept of the response function
+- c: rate or curvature paramater
+
+CODE {data-orientation=columns}
+================================
+<b> Installation </b>
+
+You can install soiltestcorr from CRAN:
+```{r echo=TRUE, eval=FALSE}
+install.packages("soiltestcorr")
+```
+Or the development version from GitHub:
+```{r echo=TRUE, eval=FALSE}
+install_github("adriancorrendo/soiltestcorr")
+```
+
+<b> Code </b>
+
+You can grab the following code to your R session and run it by yourself!
+
+Don't forget to visit the Vignettes for more details. 
+```{r echo=TRUE, eval=FALSE}
+# Load the package
+library(soiltestcorr)
+# Load your data
+my_data <- read.csv(file = "your_filename.csv", header = TRUE)
+```
+
+Modified Arcsine-log Calibration Curve <br/>
+
+```{r echo = TRUE, eval = FALSE}
+# Define RY target abd confidence level
+target <- 90 # as relative yield percentage (%), may be used in all functions except cate_nelson_1971()
+confidence <- 0.95 # 95% confidence
+
+# Fit mod_alcc()
+fit_modalcc <- mod_alcc(data = my_data, ry = y, stv = x, target = target, confidence = 0.95, tidy = TRUE)
+fit_modalcc 
+```
+
+Cate & Nelson 1965, Graphical version
+```{r echo = TRUE, eval = FALSE}
+# Fit cate_nelson_1965()
+fit_cate_nelson_1965 <- cate_nelson_1965(data = my_data, ry = y, stv = x, target = target, tidy = TRUE)
+fit_cate_nelson_1965
+```
+
+Cate & Nelson 1971, Statistical version
+```{r echo = TRUE, eval = FALSE}
+# Fit cate_nelson_1971()
+fit_cate_nelson_1971 <- cate_nelson_1971(data = my_data, ry = y, stv = x, tidy = TRUE)
+fit_cate_nelson_1971 
+```
+
+Linear-plateau response
+```{r echo = TRUE, eval = FALSE}
+# Fit linear_plateau()
+fit_linear_plateau <- linear_plateau(data = my_data, ry = y, stv = x, tidy = TRUE)
+fit_linear_plateau
+```
+
+Quadratic-plateau response
+```{r echo = TRUE, eval = FALSE}
+# Fit quadratic_plateau()
+fit_quadratic_plateau <- quadratic_plateau(data = my_data, ry = y, stv = x, tidy = TRUE)
+fit_quadratic_plateau
+```
+Mistcherlich response
+```{r echo = TRUE, eval = FALSE}
+# Fit mitscherlich
+fit_mitscherlich <- mitscherlich(data = my_data, ry = y, stv = x, type = 1, tidy = TRUE)
+fit_mitscherlich
+```
+
+
+
+ABOUT {data-orientation=rows}
+================================
+Row {data-heigth=100}
+-------------
+```{r}
+
+tabPanel(
+    titlePanel("About soiltestcorr"),
+    sidebarLayout(
+      # Logo
+        mainPanel(
+           width = 1.2,
+           img(src = "www/soiltestcorr_logo.png", height = 120, width = 100)),
+        # Main Panel
+        mainPanel(
+            h1("Description"),
+            p("Soil test correlation is foundational to the Fertilizer 
+              Recommendation Support Tool",
+              a("(FRST)",
+                href = "http://www.soiltestfrst.org/"), 
+              "being developed for the US. In this context, the soiltestcorr-package 
+              offers a collection of functions intended to contribute to reproducible 
+              correlation analysis between crop relative yield and soil test values. 
+              This web-application tool was specifically designed to facilitate the use of the 
+              soiltestcorr functionalities for users with no background in R-programming. 
+              Both developments stemmed from ongoing work with the ",
+              a("FRST",
+                href = "http://www.soiltestfrst.org/"),
+              " and Feed the Future Innovation Lab for Collaborative Research on Sustainable
+              Intensification (",
+              a("SIIL",
+                href = "https://digitalconsortium.wixsite.com/dgfsc"),
+              ") projects."),
+            tags$hr(),
+            h2("Citation"),
+            p("Correndo, A., Pearce, A., Bolster, C.H., Spargo, J.T., Osmond, D., Ciampitti, I.A., 2023. The soiltestcorr R package: An accessible framework for reproducible correlation analysis of crop yield and soil test data. SoftwareX 21, February 2023, 101275",
+              a("https://doi.org/10.1016/j.softx.2022.101275",
+                href = "https://doi.org/10.1016/j.softx.2022.101275")),
+            h3("Development"),
+            p("This application was designed by Adrian Correndo (C) (2022) using the shiny R-package.",
+              a("https://adriancorrendo.github.io/",
+                href = "https://adriancorrendo.github.io/")),
+            p("Chang et al. (2021). _shiny: Web  Application Framework for R_. R package version 1.7.1,",
+              a("<https://CRAN.R-project.org/package=shiny>", 
+                href = "https://CRAN.R-project.org/package=shiny")),
+            p("Last update on:", paste0(Sys.Date()))
+            
+        )
+    
+    )
+)
+
+
+```
